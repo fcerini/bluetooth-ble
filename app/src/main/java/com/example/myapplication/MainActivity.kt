@@ -1,16 +1,20 @@
 package com.example.myapplication
 
+import android.Manifest
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.*
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.Handler
 import android.os.ParcelUuid
 import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlin.random.Random
 
@@ -22,7 +26,7 @@ class MainActivity : AppCompatActivity() {
     private val requestBT = 1234
     var testData = "000000000000009"
 
-    private val btLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
+    private var btLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
     private var mScanning = false
     private val handler = Handler()
     private val SCAN_PERIOD: Long = 30000
@@ -90,27 +94,32 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
+        tView.setText ( "stopAdvertising! \n")
         btLeAdvertiser.stopAdvertising(advertiseCallback)
 
     }
         fun startScan( v:View){
-        if (!init()){
-            return
-        }
-
-        if (!mScanning) { // Stops scanning after a pre-defined scan period.
-                handler.postDelayed({
+            try {
+                if (!init()){
+                    return
+                }
+                if (!mScanning) { // Stops scanning after a pre-defined scan period.
+                    handler.postDelayed({
+                        mScanning = false
+                        btLeScanner.stopScan(leScanCallback)
+                        tView.setText ( tView.text.toString() +  "stopScan \n")
+                    }, SCAN_PERIOD)
+                    mScanning = true
+                    btLeScanner.startScan(leScanCallback)
+                    tView.setText ( "startScan " + SCAN_PERIOD.toString() + "sec. \n")
+                } else {
                     mScanning = false
                     btLeScanner.stopScan(leScanCallback)
-                    tView.setText ( tView.text.toString() +  "stopScan \n")
-                }, SCAN_PERIOD)
-                mScanning = true
-                btLeScanner.startScan(leScanCallback)
-                tView.setText ( "startScan " + SCAN_PERIOD.toString() + "sec. \n")
-            } else {
-                mScanning = false
-                btLeScanner.stopScan(leScanCallback)
-                tView.setText ( "stopScan!")
+                    tView.setText ( "stopScan!")
+                }
+
+            } catch (e: Throwable) {
+                tView.setText (e.message)
             }
 
     }
@@ -126,6 +135,22 @@ class MainActivity : AppCompatActivity() {
             return false
         }
 
+        if (ContextCompat.checkSelfPermission(this@MainActivity,
+                Manifest.permission.ACCESS_FINE_LOCATION) !==
+            PackageManager.PERMISSION_GRANTED) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+                ActivityCompat.requestPermissions(this@MainActivity,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            } else {
+                ActivityCompat.requestPermissions(this@MainActivity,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+            }
+
+            return false
+        }
+
+        btLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
         btLeAdvertiser = btAdapter.getBluetoothLeAdvertiser()
 
         return true
