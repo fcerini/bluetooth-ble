@@ -7,8 +7,8 @@ android {
     buildToolsVersion "30.0.0"
 
     defaultConfig {
-        applicationId "com.example.myapplication"
-        minSdkVersion 23
+        applicationId "com.example.fcerini.bluetoothtest"
+        minSdkVersion 22
         targetSdkVersion 29
         versionCode 1
         versionName "1.0"

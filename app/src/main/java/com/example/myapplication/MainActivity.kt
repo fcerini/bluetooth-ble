@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        testData = "im:00000000000000" + Random(System.nanoTime()).nextInt(0, 9).toString()
+        testData = "im:0000000000000" + Random(System.nanoTime()).nextInt(10, 90).toString()
         btstartAdvertising.setText("Advertise " + testData)
 
         init()
@@ -125,35 +125,45 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun init() :Boolean{
-        val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
-        btAdapter = bluetoothManager.adapter
-
-        if (btAdapter == null || !btAdapter.isEnabled) {
-            tView.setText ( "bluetooth problem... \n")
-            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
-            startActivityForResult(enableBtIntent, requestBT)
-            return false
-        }
-
-        if (ContextCompat.checkSelfPermission(this@MainActivity,
-                Manifest.permission.ACCESS_FINE_LOCATION) !==
-            PackageManager.PERMISSION_GRANTED) {
-            if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-                ActivityCompat.requestPermissions(this@MainActivity,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
-            } else {
-                ActivityCompat.requestPermissions(this@MainActivity,
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+        try {
+            if (!packageManager.hasSystemFeature(PackageManager.FEATURE_BLUETOOTH_LE)) {
+                tView.setText ("Bluetooth Low Energy not supported! sorry...")
+                return false
             }
 
-            return false
+            val bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+            btAdapter = bluetoothManager.adapter
+
+            if (btAdapter == null || !btAdapter.isEnabled) {
+                tView.setText ( "bluetooth problem... \n")
+                val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+                startActivityForResult(enableBtIntent, requestBT)
+                return false
+            }
+
+            if (ContextCompat.checkSelfPermission(this@MainActivity,
+                    Manifest.permission.ACCESS_FINE_LOCATION) !==
+                PackageManager.PERMISSION_GRANTED) {
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this@MainActivity,
+                        Manifest.permission.ACCESS_FINE_LOCATION)) {
+                    ActivityCompat.requestPermissions(this@MainActivity,
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+                } else {
+                    ActivityCompat.requestPermissions(this@MainActivity,
+                        arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+                }
+
+                return false
+            }
+
+            btLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
+            btLeAdvertiser = btAdapter.bluetoothLeAdvertiser
+
+            return true
+        } catch (e: Throwable) {
+            tView.setText (e.message)
+            return true
         }
-
-        btLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
-        btLeAdvertiser = btAdapter.getBluetoothLeAdvertiser()
-
-        return true
     }
 
 
@@ -183,7 +193,7 @@ class MainActivity : AppCompatActivity() {
      */
     private fun buildAdvertiseSettings(): AdvertiseSettings? {
         val settingsBuilder = AdvertiseSettings.Builder()
-        settingsBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_POWER)
+        settingsBuilder.setAdvertiseMode(AdvertiseSettings.ADVERTISE_MODE_LOW_LATENCY)
         settingsBuilder.setTimeout(0)
         return settingsBuilder.build()
     }
