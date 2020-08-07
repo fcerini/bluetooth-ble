@@ -16,21 +16,21 @@
             android:id="@+id/btstartAdvertising"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="startAdvertising"
+            android:onClick="btStartAdvertising"
             android:text="set in oncreate" />
 
         <Button
             android:id="@+id/stopAdvertising"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="stopAdvertising"
+            android:onClick="btStopAdvertising"
             android:text="stop Advertising" />
 
         <Button
             android:id="@+id/btstartScan"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:onClick="startScan"
+            android:onClick="btStartScan"
             android:text="start Scan" />
 
         <EditText
