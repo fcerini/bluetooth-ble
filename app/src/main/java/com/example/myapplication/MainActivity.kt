@@ -56,9 +56,7 @@ class MainActivity : AppCompatActivity() {
                 oldRSSI = 999
             }
 
-            if (deviceRSSI < oldRSSI){
-                btNearbyMap.put(deviceImei, deviceRSSI)
-            }
+            btNearbyMap.put(deviceImei, deviceRSSI)
 
             tView.setText ("")
             for (item in btNearbyMap) {
